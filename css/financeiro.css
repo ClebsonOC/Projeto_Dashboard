@@ -1,0 +1,148 @@
+/* financeiro.css */
+
+.financeiro-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(280px, 1fr)
+  ); /* Ajuste para 3 colunas */
+  gap: 20px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.financeiro-kpi-card {
+  background-color: var(--card-bg); /* Usar o fundo padrão do card */
+  border-left-width: 5px;
+  border-left-style: solid;
+  border-radius: var(--card-border-radius);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  box-shadow: var(--card-shadow);
+}
+
+.financeiro-kpi-card .kpi-icon {
+  font-size: 2.5em; /* Ícone maior */
+  margin-right: 20px;
+}
+
+.financeiro-kpi-card .kpi-text h4 {
+  font-size: 0.95em;
+  color: var(--secondary-color);
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.financeiro-kpi-card .kpi-text .kpi-value {
+  font-size: 1.5em;
+  font-weight: 700;
+  color: var(--dark-color);
+}
+
+/* Cores específicas para os KPIs financeiros */
+.financeiro-kpi-card.status-ok {
+  border-left-color: var(--success-color);
+}
+.financeiro-kpi-card.status-ok .kpi-icon {
+  color: var(--success-color);
+}
+
+.financeiro-kpi-card.status-warning {
+  border-left-color: var(--warning-color);
+}
+.financeiro-kpi-card.status-warning .kpi-icon {
+  color: var(--warning-color);
+}
+
+.financeiro-kpi-card.status-danger {
+  border-left-color: var(--danger-color);
+}
+.financeiro-kpi-card.status-danger .kpi-icon {
+  color: var(--danger-color);
+}
+
+/* Estilos para a tabela da aba Financeiro */
+.financeiro-table th,
+.financeiro-table td {
+  padding: 8px 10px;
+  font-size: 0.8em; /* Fonte menor para mais colunas */
+  white-space: nowrap;
+}
+
+.financeiro-table .text-right {
+  text-align: right;
+}
+.financeiro-table th {
+  text-align: center;
+}
+.status-text {
+  font-weight: 500;
+}
+.status-text.status-recebido {
+  color: var(--success-color);
+}
+.status-text.status-aguardando {
+  color: var(--warning-color);
+}
+/* Adicionar mais classes de status conforme necessário */
+
+.financeiro-table tfoot td {
+  font-weight: bold;
+  background-color: #f0f0f0;
+}
+
+.total-progress-cell {
+  padding-top: 12px; /* Alinhar melhor a barra de progresso verticalmente */
+  padding-bottom: 12px;
+}
+
+.table-footer-progress {
+  width: 100%;
+  height: 10px; /* Altura da barra de progresso */
+  background-color: #e9ecef; /* Cor de fundo da barra */
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.table-footer-progress-bar {
+  height: 100%;
+  background-color: var(--primary-color); /* Cor da barra preenchida */
+  border-radius: 5px;
+}
+
+@media (max-width: 1200px) {
+  .financeiro-kpi-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+}
+@media (max-width: 768px) {
+  .financeiro-table {
+    /*min-width: 1100px; /* Ajustar conforme a necessidade de visualização das colunas */
+    min-width: auto; /* Pode usar auto ou unset para garantir que não haja min-width fixa */
+    width: 100%;
+  }
+  .financeiro-kpi-card .kpi-icon {
+    font-size: 2em;
+    margin-right: 15px;
+  }
+  .financeiro-kpi-card .kpi-text .kpi-value {
+    font-size: 1.3em;
+  }
+}
+.data-table.financeiro-table th,
+.data-table.financeiro-table td {
+    text-align: center;
+    vertical-align: middle; /* Recomendado para melhor alinhamento vertical */
+}
+/* css/financeiro.css ou style.css */
+
+.data-table.financeiro-table td.nf-cell-content {
+    overflow-wrap: break-word; /* Padrão moderno para quebrar palavras longas */
+    word-wrap: break-word;     /* Alias mais antigo para compatibilidade */
+    white-space: normal;       /* Garante que o comportamento de quebra de linha padrão seja aplicado */
+    /* Opcional: Você pode querer definir uma largura máxima para a coluna NF 
+       para ter mais controle sobre quando a quebra ocorre. */
+    max-width: 120px;  /* Exemplo, ajuste conforme necessário */
+    /* A regra de text-align: center; que adicionamos antes continuará a centralizar o conteúdo */
+}

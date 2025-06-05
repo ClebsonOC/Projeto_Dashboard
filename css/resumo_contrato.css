@@ -1,0 +1,134 @@
+/* resumo_contrato.css */
+
+.chart-card {
+  margin-bottom: 20px;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  flex-wrap: wrap; /* Permite quebra de linha em telas menores */
+}
+
+.chart-header h3 {
+  margin-bottom: 0; /* Remove margem se estiver usando flex */
+  flex-shrink: 0; /* Impede que o título encolha */
+}
+
+.chart-legend-curva-s {
+  display: flex;
+  flex-wrap: wrap; /* Permite quebra de linha na legenda */
+  gap: 10px 20px; /* Espaçamento entre itens da legenda */
+  font-size: 0.8em;
+  color: var(--secondary-color);
+}
+
+.chart-legend-curva-s span {
+  display: inline-flex;
+  align-items: center;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 6px;
+  display: inline-block;
+}
+
+.legend-dot.cronograma {
+  background-color: #4bc0c0;
+} /* Cor de exemplo, ajustar conforme a imagem */
+.legend-dot.custo {
+  background-color: #ff6384;
+} /* Cor de exemplo */
+.legend-dot.executado {
+  background-color: #36a2eb;
+} /* Cor de exemplo */
+
+.chart-placeholder-curva-s {
+  background-color: #f8f9fa; /* Um fundo claro para o placeholder */
+  padding: 20px;
+  border-radius: var(--card-border-radius);
+  text-align: center; /* Centraliza a imagem placeholder */
+  min-height: 300px; /* Altura mínima para o placeholder */
+  display: flex;
+  flex-direction: column; /* Empilha a imagem e os eixos */
+  justify-content: center; /* Centraliza o conteúdo verticalmente */
+  align-items: center; /* Centraliza o conteúdo horizontalmente */
+  position: relative; /* Para posicionar os eixos se necessário */
+}
+
+.chart-placeholder-curva-s img {
+  max-width: 100%;
+  object-fit: contain;
+}
+
+/* Estilização básica para os eixos (simulados) */
+.chart-axes {
+  width: 100%;
+  padding: 0 10px; /* Evitar que os labels toquem as bordas */
+  margin-top: 5px; /* Espaço entre imagem e labels */
+}
+.y-axis-labels {
+  float: left; /* Posiciona à esquerda */
+  display: flex;
+  flex-direction: column-reverse; /* Inverte a ordem para alinhar com o eixo Y */
+  align-items: flex-start;
+  font-size: 0.7em;
+  color: var(--secondary-color);
+  height: 80px; /* Altura aproximada do eixo Y na imagem placeholder */
+  justify-content: space-between;
+  margin-right: 5px;
+}
+.x-axis-labels {
+  display: flex;
+  justify-content: space-around; /* Distribui os anos */
+  font-size: 0.7em;
+  color: var(--secondary-color);
+  padding-top: 5px; /* Espaço do "eixo" */
+  border-top: 1px solid #ccc; /* Linha simulando o eixo X */
+  margin-left: 30px; /* Espaço para os labels do eixo Y */
+}
+
+/* Estilos para a tabela da aba Resumo Contrato */
+.resumo-contrato-table th,
+.resumo-contrato-table td {
+  padding: 8px 10px;
+  font-size: 0.8em; /* Um pouco menor para caber mais colunas */
+  white-space: nowrap;
+}
+
+.resumo-contrato-table .text-right {
+  text-align: right;
+}
+
+.resumo-contrato-table tfoot td {
+  font-weight: bold;
+  background-color: #f0f0f0;
+}
+
+@media (max-width: 768px) {
+  .chart-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .chart-legend-curva-s {
+    margin-top: 10px;
+  }
+  .resumo-contrato-table {
+    min-width: 1000px; /* Ajustar conforme a necessidade de visualização das colunas */
+  }
+  .x-axis-labels,
+  .y-axis-labels {
+    font-size: 0.6em;
+  }
+  .y-axis-labels {
+    margin-left: 0;
+  }
+  .x-axis-labels {
+    margin-left: 20px; /* Reduzir margem */
+  }
+}

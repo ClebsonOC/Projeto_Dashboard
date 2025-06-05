@@ -1,0 +1,55 @@
+<div class="financeiro-kpi-grid card">
+  <div class="financeiro-kpi-card status-ok">
+    <i class="fas fa-check-circle kpi-icon"></i>
+    <div class="kpi-text">
+      <h4>Recebimento Líquido</h4>
+      <p class="kpi-value" id="kpiRecebimentoLiquido">R$ 0,00</p> </div>
+  </div>
+  <div class="financeiro-kpi-card status-warning">
+    <i class="fas fa-exclamation-triangle kpi-icon"></i>
+    <div class="kpi-text">
+      <h4>Aguardando pagamento</h4>
+      <p class="kpi-value" id="kpiAguardandoPagamento">R$ 0,00</p> </div>
+  </div>
+  <div class="financeiro-kpi-card status-danger">
+    <i class="fas fa-times-circle kpi-icon"></i>
+    <div class="kpi-text">
+      <h4>Aguardando liberação</h4>
+      <p class="kpi-value" id="kpiAguardandoLiberacao">R$ 0,00</p> </div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Resumo Financeiro</h3>
+  <div class="table-responsive">
+    <table class="data-table financeiro-table">
+      <thead>
+        <tr>
+          <th>ÓRGÃO</th>
+          <th>OBRA</th>
+          <th>MEDIÇÃO</th>
+          <th>PERIODO</th>
+          <th>EXECUTADO (R$)</th>
+          <th>NF</th>
+          <th>DATA PROTOCOLO</th>
+          <th>Nº PROCESSO</th>
+          <th>STATUS</th>
+          <th>DATA PAGT°</th>
+          <th>VALOR PAGO (R$)</th>
+        </tr>
+      </thead>
+      <tbody id="financeiroTableBody"> </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="4"><strong>Total</strong></td>
+          <td class="text-right" id="financeiroTotalExecutado"><strong>R$ 0,00</strong></td> <td colspan="5"></td>
+          <td class="total-progress-cell">
+            <div class="table-footer-progress">
+              <div class="table-footer-progress-bar" id="financeiroProgressBar" style="width: 0%;"></div>
+            </div>
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>

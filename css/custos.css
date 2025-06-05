@@ -1,0 +1,97 @@
+/* custos.css */
+
+.custos-layout {
+  display: grid;
+  grid-template-columns: 1fr 2fr; /* Coluna da esquerda menor, direita maior */
+  gap: 20px;
+}
+
+.custos-resumo h3,
+.custos-medicoes h3 {
+  font-size: 1.2em;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: var(--primary-color);
+}
+
+.resumo-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.resumo-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 0.9em;
+}
+
+.resumo-list li:last-child {
+  border-bottom: none;
+}
+
+.resumo-list li span {
+  color: var(--secondary-color);
+}
+
+.resumo-list li span.value {
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.resumo-list li.highlight span {
+  color: var(--primary-color); /* Destaque para resultado e % no resumo */
+  font-weight: bold;
+}
+.resumo-list li.highlight span.value {
+  color: var(--primary-color);
+}
+
+.medicoes-table th,
+.medicoes-table td {
+  padding: 8px 10px;
+  font-size: 0.85em;
+  white-space: nowrap;
+}
+
+.medicoes-table .text-right {
+  text-align: right;
+}
+
+.medicoes-table .result-positive {
+  color: var(--success-color); /* Verde para resultados positivos */
+}
+
+.medicoes-table .result-negative {
+  color: var(--danger-color); /* Vermelho para resultados negativos */
+}
+
+.medicoes-table tfoot td {
+  font-weight: bold;
+  background-color: #f0f0f0;
+}
+
+/* Responsividade */
+@media (max-width: 992px) {
+  .custos-layout {
+    grid-template-columns: 1fr; /* Empilha as colunas */
+  }
+}
+
+@media (max-width: 768px) {
+  .medicoes-table {
+    min-width: 600px; /* Ajustar conforme necessidade de visualização das colunas */
+  }
+  .resumo-list li {
+    font-size: 0.85em;
+    padding: 8px 0;
+  }
+  .resumo-list li span.value {
+    /* white-space: nowrap; */
+    /* overflow: hidden; */
+    /* text-overflow: ellipsis; */
+    /* max-width: 150px; /* Ajuste para evitar quebra feia em valores longos */
+  }
+}

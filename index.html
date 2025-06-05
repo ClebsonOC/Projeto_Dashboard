@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Medição</title>
+  <link rel="stylesheet" href="css/style.css">
+
+  <link rel="stylesheet" href="css/painel_geral.css">
+  <link rel="stylesheet" href="css/dados_contrato.css">
+  <link rel="stylesheet" href="css/obra.css">
+  <link rel="stylesheet" href="css/resumo_contrato.css">
+  <link rel="stylesheet" href="css/custos.css">
+  <link rel="stylesheet" href="css/financeiro.css">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+  <style>
+    /* Estilo opcional para os dropdowns do Choices.js parecerem mais com os inputs normais */
+    .choices.filter-choices {
+      margin-bottom: 0; /* Ajuste conforme seu CSS base */
+      font-size: 0.9rem; /* Ajuste conforme seu CSS base */
+    }
+    .choices__inner {
+      background-color: #fff; /* Cor de fundo similar aos seus inputs */
+      border: 1px solid #ced4da; /* Borda similar */
+      border-radius: 0.25rem; /* Arredondamento similar */
+      min-height: auto; /* Ajuste para altura */
+      padding: 0.375rem 0.75rem; /* Padding similar */
+    }
+    .choices__list--multiple .choices__item {
+      background-color: #007bff; /* Cor das tags selecionadas */
+      border: 1px solid #007bff;
+      border-radius: 0.2rem;
+      font-size: 0.85rem; /* Tamanho da fonte das tags */
+    }
+    /* Adicione mais CSS customizado aqui se necessário para combinar com seu tema */
+  </style>
+</head>
+
+<body>
+  <div class="dashboard-container">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2 class="logo">SETOR<span class="logo-accent">MEDIÇÃO</span></h2>
+        <button class="menu-toggle" id="menuToggle" aria-label="Alternar menu">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+      <nav class="sidebar-nav">
+        <ul>
+          <li class="nav-item">
+            <a href="#painel-geral">
+              <i class="fas fa-tachometer-alt"></i>
+              <span class="nav-text">Painel Geral</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#dados-contrato">
+              <i class="fas fa-file-contract"></i>
+              <span class="nav-text">Dados Contrato</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#obra">
+              <i class="fas fa-hard-hat"></i>
+              <span class="nav-text">Obra</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#resumo-contrato">
+              <i class="fas fa-chart-line"></i>
+              <span class="nav-text">Resumo Contrato</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#custos">
+              <i class="fas fa-file-invoice-dollar"></i>
+              <span class="nav-text">Custos</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#financeiro">
+              <i class="fas fa-cash-register"></i>
+              <span class="nav-text">Financeiro</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="/logout" class="logout-link"> <i class="fas fa-sign-out-alt"></i>
+          <span class="nav-text">Sair</span>
+        </a>
+      </div>
+    </aside>
+
+    <main class="main-content" id="mainContent">
+      <header class="main-header">
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Abrir menu">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="header-title" id="pageHeaderTitle">
+          <h1>Painel Geral</h1>
+          <p>Visão geral do progresso e finanças.</p>
+        </div>
+        <div class="header-actions">
+          <button class="action-btn" id="filterToggle" aria-label="Abrir filtros">
+            <i class="fas fa-filter"></i>
+          </button>
+          <div class="user-profile">
+            <img src="https://placehold.co/800?text=Hello+World&font=roboto" alt="Foto do Usuário" class="user-avatar">
+            <span class="user-name">Usuário</span>
+            <i class="fas fa-chevron-down"></i>
+          </div>
+        </div>
+      </header>
+
+      <section class="content-area" id="dynamicContentArea">
+        <p>Carregando conteúdo...</p>
+      </section>
+
+      <footer class="main-footer">
+        <p>&copy; <span id="currentYear"></span> Setor Medição</p>
+      </footer>
+    </main>
+
+    <aside class="filter-panel" id="filterPanel">
+      <div class="filter-panel-header">
+        <h3>Filtros</h3>
+        <button class="close-filter-panel" id="closeFilterPanel" aria-label="Fechar filtros">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="filter-panel-body">
+        <div class="filter-group">
+          <label for="filterDataPagtInicio">Data Pagamento (Início):</label>
+          <input type="date" id="filterDataPagtInicio" class="filter-input">
+        </div>
+        <div class="filter-group">
+          <label for="filterDataPagtFim">Data Pagamento (Fim):</label>
+          <input type="date" id="filterDataPagtFim" class="filter-input">
+        </div>
+
+        <div class="filter-group">
+          <label for="filterLegenda">Legenda:</label>
+          <select id="filterLegenda" class="filter-input"> <option value="">Todos</option>
+            <option value="1">RECEBIDO</option>
+            <option value="2">AGUARDANDO PAGAMENTO</option>
+            <option value="3">AGUARDANDO LIBERAÇÃO</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="filterOrgao">Órgão:</label>
+          <select id="filterOrgao" class="filter-input" multiple>
+            </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="filterObra">Obra:</label>
+          <select id="filterObra" class="filter-input" multiple>
+            </select>
+        </div>
+        <div class="filter-group">
+          <label for="filterNf">NF:</label>
+          <input type="text" id="filterNf" class="form-control filter-input" placeholder="Digite a NF">
+        </div>
+        <div class="filter-group">
+          <label for="filterNumProcesso1Select">Nº Processo:</label>
+          <select id="filterNumProcesso1Select" class="filter-input" multiple>
+            </select>
+        </div>
+        <button class="clear-filters-btn" id="clearFilters">Limpar Filtros</button>
+      </div>
+    </aside>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+  <script type="module" src="js/script.js"></script>
+</body>
+
+</html>

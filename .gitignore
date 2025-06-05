@@ -1,0 +1,18 @@
+
+00. backup/
+01. obsloleto/
+
+
+node_modules/
+
+
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+
+
+.env
+
+
+.DS_Store
+Thumbs.db

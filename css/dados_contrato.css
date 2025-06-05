@@ -1,0 +1,53 @@
+/* dados_contrato.css */
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto; /* Permite rolagem horizontal em telas pequenas */
+  -webkit-overflow-scrolling: touch; /* Melhora a rolagem em iOS */
+  margin-top: 10px; /* Pequeno espaço acima da tabela */
+}
+
+.data-table {
+  width: 100%;
+  /*min-width: 1200px; /* Largura mínima para evitar quebra excessiva de colunas */
+  border-collapse: collapse;
+  font-size: 0.85em; /* Tamanho de fonte um pouco menor para caber mais dados */
+  color: var(--text-color);
+}
+
+.data-table th,
+.data-table td {
+  border: 1px solid #ddd; /* Borda sutil para células */
+  padding: 10px 12px; /* Aumentado padding para melhor leitura */
+  text-align: left;
+  white-space: nowrap; /* Evita quebra de linha dentro das células */
+}
+
+.data-table thead {
+  background-color: var(--dark-color); /* Cabeçalho escuro como na imagem */
+  color: var(--light-color); /* Texto claro no cabeçalho */
+}
+
+.data-table thead th {
+  font-weight: 600; /* Cabeçalho em negrito */
+  border-color: var(--dark-color);
+}
+
+.data-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9; /* Linhas alternadas para melhor legibilidade */
+}
+
+.data-table tbody tr:hover {
+  background-color: #f1f1f1; /* Destaque ao passar o mouse */
+}
+
+/* Ajustes para mobile dentro da table-responsive */
+@media (max-width: 768px) {
+  .data-table {
+    font-size: 0.8em; /* Reduzir ainda mais a fonte em mobile, se necessário */
+  }
+  .data-table th,
+  .data-table td {
+    padding: 8px 10px; /* Reduzir padding em mobile */
+  }
+}
