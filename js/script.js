@@ -263,13 +263,13 @@ document.addEventListener('DOMContentLoaded', function() {
         filteredRows.forEach(item => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${item.orgaoFormatted}</td> <td>${item.obraFormatted}</td>
+                <td class="text-center">${item.orgaoFormatted}</td> <td>${item.obraFormatted}</td>
                 <td>${item.medicaoFormatted}</td> <td>${item.periodoFormatted}</td>
-                <td>${item.executadoFormatted}</td>
+                <td class="text-right">${item.executadoFormatted}</td>
                 <td class="nf-cell-content">${item.nfFormatted}</td>
                 <td>${item.dataProtocoloFormatted}</td> <td>${item.numProcessoFormatted}</td>
                 <td class="status-text ${item.statusClass}">${item.statusFormatted}</td>
-                <td>${item.dataPagtFormatted}</td> <td>${item.valorPagtFormatted}</td>
+                <td>${item.dataPagtFormatted}</td> <td class="text-right">${item.valorPagtFormatted}</td>
             `;
             tableBody.appendChild(tr);
         });

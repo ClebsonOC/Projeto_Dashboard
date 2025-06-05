@@ -146,3 +146,100 @@
     max-width: 120px;  /* Exemplo, ajuste conforme necessário */
     /* A regra de text-align: center; que adicionamos antes continuará a centralizar o conteúdo */
 }
+/* financeiro.css */
+
+/* Ajustes para diminuir os KPIs */
+.financeiro-kpi-card .kpi-icon {
+  font-size: 2em; /* Reduzir de 2.5em para 2em */
+  margin-right: 15px; /* Ajustar margem */
+}
+
+.financeiro-kpi-card .kpi-text h4 {
+  font-size: 0.85em; /* Reduzir o tamanho do título */
+  margin-bottom: 3px; /* Reduzir a margem inferior */
+}
+
+.financeiro-kpi-card .kpi-text .kpi-value {
+  font-size: 1.3em; /* Reduzir o tamanho do valor */
+}
+
+/* Manter a estrutura sticky para o container dos KPIs */
+.kpi-sticky-container {
+    position: sticky;
+    top: 0; /* Sticky no topo do content-area */
+    z-index: 100; /* Garante que fique acima da tabela ao rolar */
+    background-color: var(--bg-color); /* Fundo para cobrir o que está por baixo */
+    padding-top: 15px;
+    padding-bottom: 5px;
+    width: 100%;
+}
+
+.financeiro-kpi-grid {
+    margin-bottom: 0; /* Remove a margem inferior */
+    box-shadow: var(--card-shadow); /* Mantenha a sombra se quiser */
+    border-radius: var(--card-border-radius); /* Mantenha o arredondamento se quiser */
+    padding: 15px; /* Padding interno dos cards */
+}
+
+/* Adicionar margem ao próximo card para separar dos KPIs */
+.card:has(h3) {
+    margin-top: 20px;
+}
+
+/* **NOVO:** Estilo para fixar o cabeçalho da tabela */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto; /* Mantém rolagem horizontal para a tabela */
+  -webkit-overflow-scrolling: touch;
+  margin-top: 10px;
+  /* Importante: Adicionar altura máxima e rolagem vertical */
+  max-height: calc(100vh - var(--header-height) - 150px - 20px - 20px - 60px); /* Exemplo: viewport height - header - kpi_container_height - card_padding - footer_height */
+                                                                           /* Ajuste 150px conforme a altura real dos seus KPIs + margens */
+                                                                           /* 20px + 20px dos paddings do content-area, 60px do footer */
+  overflow-y: auto; /* Permite rolagem vertical apenas na tabela */
+  border: 1px solid #ddd; /* Adiciona borda para a área de rolagem da tabela */
+  border-radius: var(--card-border-radius);
+}
+
+.financeiro-table thead th {
+  position: sticky;
+  top: 0; /* Fixa o cabeçalho no topo da área de rolagem do .table-responsive */
+  background-color: var(--dark-color); /* Fundo para cobrir o conteúdo ao rolar */
+  z-index: 20; /* Garante que o cabeçalho fique acima do corpo da tabela */
+  border-bottom: 1px solid var(--dark-color); /* Linha de separação */
+}
+
+/* Estilos para a tabela da aba Financeiro */
+.financeiro-table {
+  /* Remova qualquer max-width ou min-width fixa aqui se estiver atrapalhando */
+  width: 100%; /* Garante que a tabela use 100% da largura disponível */
+}
+
+.financeiro-table th,
+.financeiro-table td {
+  padding: 8px 10px;
+  font-size: 0.8em;
+  white-space: nowrap;
+}
+
+/* ... mantenha seus outros estilos de financeiro.css ... */
+
+/* Media queries para ajustar os KPIs em telas menores */
+@media (max-width: 1200px) {
+  .financeiro-kpi-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Ajusta a largura mínima dos cards */
+  }
+}
+@media (max-width: 768px) {
+  .financeiro-kpi-card .kpi-icon {
+    font-size: 1.8em; /* Reduzir ainda mais para mobile */
+  }
+  .financeiro-kpi-card .kpi-text .kpi-value {
+    font-size: 1.2em;
+  }
+  .table-responsive {
+    /* Ajuste a altura máxima para mobile, considerando a altura do header e footer mobile */
+    max-height: calc(100vh - var(--header-height) - 130px - 15px - 60px); /* Ajuste os valores */
+    /* 130px é uma estimativa para a altura dos KPIs no mobile + padding */
+  }
+}
