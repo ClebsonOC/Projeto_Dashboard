@@ -22,9 +22,9 @@ app.use(
 
 // Armazenamento de Usuários (Exemplo)
 const users = [
-  { id: 1, username: "admin", password: "7946130", orgao: "ADMINISTRATIVO", gerente: "TODOS" },
-  { id: 2, username: "financeiro", password: "8523", orgao: "FINANCEIRO", gerente: "TODOS" },
-  { id: 3, username: "fillipe", password: "7896", orgao: "REGIAO METROPOLITANA 2", gerente: "FILLIPE" }, // Filtrado por gerente
+  { id: 1, username: "debora", password: "7946130", orgao: "ADMINISTRATIVO", gerente: "TODOS" },
+  { id: 2, username: "luciana", password: "8523", orgao: "FINANCEIRO", gerente: "TODOS" },
+  { id: 3, username: "filippy", password: "7896", orgao: "REGIAO METROPOLITANA 2", gerente: "FILLIPE" }, // Filtrado por gerente
   { id: 4, username: "octavio", password: "1254", orgao: "REGIAO METROPOLITANA 3", gerente: "OCTAVIO" }, // Filtrado por gerente
   { id: 5, username: "erisangela", password: "1452", orgao: "REGIAO METROPOLITANA 1", gerente: "ERISANGELA" } // Exemplo de RM com acesso total aos dados
   // Adicione outros usuários conforme sua necessidade
