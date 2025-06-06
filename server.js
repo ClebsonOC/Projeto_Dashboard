@@ -101,7 +101,7 @@ app.get('/api/userinfo', (req, res) => {
 });
 
 app.get('/api/financeiro-data', async (req, res) => {
-  const googleSheetTsvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSjDtKtNmd2A5MkAWQnhl0Mu_qFApGu7f1DCRxcAZA33fywm1X-lzDg9pV_cso9-A/pub?gid=1369259147&single=true&output=tsv";
+  const googleSheetTsvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQE41LdNq9qQTcY5Ze6MJ3Bi3CAn8o9OI6ixrFseQZgsfItqyjrIFi75GjMMUjS6KwLYC3qX3xRKher/pub?gid=1589437429&single=true&output=tsv";
   try {
     const sheetResponse = await fetch(googleSheetTsvUrl);
     if (!sheetResponse.ok) throw new Error(`Erro ao buscar TSV da planilha: ${sheetResponse.statusText}`);
