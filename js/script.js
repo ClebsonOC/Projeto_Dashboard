@@ -5,6 +5,7 @@ let allProcessedFinanceiroData = [];
 let choicesOrgao = null;
 let choicesObra = null;
 let choicesNumProcesso = null;
+let choicesNf = null; // Adicionado
 let isRefreshingFilters = false;
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -25,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('filterDataPagtInicio'),
     document.getElementById('filterDataPagtFim'),
     document.getElementById('filterLegenda'),
-    document.getElementById('filterNf')
+    // document.getElementById('filterNf') // Removido daqui
   ];
 
   const routes = { /* ... Seu objeto routes ... */ 
@@ -54,6 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
           if (choicesOrgao) { choicesOrgao.destroy(); choicesOrgao = null; }
           if (choicesObra) { choicesObra.destroy(); choicesObra = null; }
           if (choicesNumProcesso) { choicesNumProcesso.destroy(); choicesNumProcesso = null; }
+          if (choicesNf) { choicesNf.destroy(); choicesNf = null; } // Adicionado
           if (filterPanel) filterPanel.classList.remove('open');
           if (filterToggleBtn) filterToggleBtn.style.display = 'none';
           if (mainContent && window.innerWidth > 768) mainContent.classList.remove('filter-panel-open');
@@ -114,12 +116,14 @@ document.addEventListener('DOMContentLoaded', function() {
         if (choicesOrgao) choicesOrgao.removeActiveItems();
         if (choicesObra) choicesObra.removeActiveItems();
         if (choicesNumProcesso) choicesNumProcesso.removeActiveItems();
+        if (choicesNf) choicesNf.removeActiveItems(); // Adicionado
         standardFilterInputs.forEach(input => { if (input) input.value = ''; });
         if (allProcessedFinanceiroData?.length > 0) {
             const fullOpts = (getter) => Array.from(new Set(allProcessedFinanceiroData.map(getter).filter(Boolean))).sort().map(v => ({ value: v.toLowerCase(), label: v }));
             if (choicesOrgao) choicesOrgao.setChoices(fullOpts(item => item.rawOrgao), 'value', 'label', true);
             if (choicesObra) choicesObra.setChoices(fullOpts(item => item.obraFormatted), 'value', 'label', true);
             if (choicesNumProcesso) choicesNumProcesso.setChoices(fullOpts(item => item.rawNumProcesso1), 'value', 'label', true);
+            if (choicesNf) choicesNf.setChoices(fullOpts(item => item.rawNf), 'value', 'label', true); // Adicionado
         }
         isRefreshingFilters = false;
         applyFiltersToTable(); 
@@ -140,7 +144,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Listener global para fechar dropdowns do Choices.js
   document.addEventListener('mousedown', function(event) { /* ... Sua função ... */ 
-    const instances = [choicesOrgao, choicesObra, choicesNumProcesso];
+    const instances = [choicesOrgao, choicesObra, choicesNumProcesso, choicesNf]; // Adicionado choicesNf
     for (const instance of instances) {
         if (instance?.dropdown.isActive) {
             const choicesContainer = instance.containerOuter.element;
@@ -237,11 +241,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const filterDataPagtInicio = document.getElementById('filterDataPagtInicio')?.value || '';
     const filterDataPagtFim = document.getElementById('filterDataPagtFim')?.value || '';
     const filterLegenda = document.getElementById('filterLegenda')?.value || '';
-    const filterNf = document.getElementById('filterNf')?.value.toLowerCase() || '';
+    // const filterNf = document.getElementById('filterNf')?.value.toLowerCase() || ''; // Removido
 
     const selectedOrgaos = choicesOrgao ? choicesOrgao.getValue(true).map(v => v.toLowerCase()) : [];
     const selectedObras = choicesObra ? choicesObra.getValue(true).map(v => v.toLowerCase()) : [];
     const selectedNumProcessos = choicesNumProcesso ? choicesNumProcesso.getValue(true).map(v => v.toLowerCase()) : [];
+    const selectedNfs = choicesNf ? choicesNf.getValue(true).map(v => v.toLowerCase()) : []; // Adicionado
 
     let filteredRows = allProcessedFinanceiroData.filter(item => {
         let showRow = true;
@@ -251,7 +256,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (showRow && filterLegenda && item.rawLegenda !== filterLegenda) showRow = false;
         if (showRow && selectedOrgaos.length > 0 && (!item.rawOrgao || !selectedOrgaos.includes(item.rawOrgao.toLowerCase()))) showRow = false;
         if (showRow && selectedObras.length > 0 && (!item.obraFormatted || !selectedObras.includes(item.obraFormatted.toLowerCase()))) showRow = false;
-        if (showRow && filterNf && (!item.rawNf || item.rawNf.toLowerCase().indexOf(filterNf) === -1)) showRow = false;
+        // if (showRow && filterNf && (!item.rawNf || item.rawNf.toLowerCase().indexOf(filterNf) === -1)) showRow = false; // Removido
+        if (showRow && selectedNfs.length > 0 && (!item.rawNf || !selectedNfs.includes(item.rawNf.toLowerCase()))) showRow = false; // Adicionado
         if (showRow && selectedNumProcessos.length > 0 && (!item.rawNumProcesso1 || !selectedNumProcessos.includes(item.rawNumProcesso1.toLowerCase()))) showRow = false;
         return showRow;
     });
@@ -308,21 +314,29 @@ document.addEventListener('DOMContentLoaded', function() {
         if (choicesOrgao) { choicesOrgao.clearStore(); choicesOrgao.disable(); }
         if (choicesObra) { choicesObra.clearStore(); choicesObra.disable(); }
         if (choicesNumProcesso) { choicesNumProcesso.clearStore(); choicesNumProcesso.disable(); }
+        if (choicesNf) { choicesNf.clearStore(); choicesNf.disable(); } // Adicionado
         return;
     }
     const uniqueOrgaos = new Set(dataToUseForOptions.map(item => item.rawOrgao).filter(Boolean));
     const uniqueObras = new Set(dataToUseForOptions.map(item => item.obraFormatted).filter(Boolean));
     const uniqueNumProcesso1 = new Set(dataToUseForOptions.map(item => item.rawNumProcesso1).filter(Boolean));
+    const uniqueNfs = new Set(dataToUseForOptions.map(item => item.rawNf).filter(Boolean)); // Adicionado
+
     if (choicesOrgao) { choicesOrgao.destroy(); choicesOrgao = null; } choicesOrgao = createChoicesInstance('filterOrgao', 'Órgão(s)');
     if (choicesObra) { choicesObra.destroy(); choicesObra = null; } choicesObra = createChoicesInstance('filterObra', 'Obra(s)');
     if (choicesNumProcesso) { choicesNumProcesso.destroy(); choicesNumProcesso = null; } choicesNumProcesso = createChoicesInstance('filterNumProcesso1Select', 'Nº Processo(s)');
+    if (choicesNf) { choicesNf.destroy(); choicesNf = null; } choicesNf = createChoicesInstance('filterNf', 'NF(s)'); // Adicionado
+
     const orgaoChoicesArray = Array.from(uniqueOrgaos).sort().map(val => ({ value: val.toLowerCase(), label: val }));
     const obraChoicesArray = Array.from(uniqueObras).sort().map(val => ({ value: val.toLowerCase(), label: val }));
     const numProcessoChoicesArray = Array.from(uniqueNumProcesso1).sort().map(val => ({ value: val.toLowerCase(), label: val }));
+    const nfChoicesArray = Array.from(uniqueNfs).sort().map(val => ({ value: val.toLowerCase(), label: val })); // Adicionado
+
     isRefreshingFilters = true; 
     if (choicesOrgao) { choicesOrgao.enable(); choicesOrgao.setChoices(orgaoChoicesArray, 'value', 'label', true); }
     if (choicesObra) { choicesObra.enable(); choicesObra.setChoices(obraChoicesArray, 'value', 'label', true); }
     if (choicesNumProcesso) { choicesNumProcesso.enable(); choicesNumProcesso.setChoices(numProcessoChoicesArray, 'value', 'label', true); }
+    if (choicesNf) { choicesNf.enable(); choicesNf.setChoices(nfChoicesArray, 'value', 'label', true); } // Adicionado
     isRefreshingFilters = false;
     if (dataToUseForOptions.length === 0) { const di = document.getElementById('filterDataPagtInicio'), df = document.getElementById('filterDataPagtFim'); if (di) di.value = ''; if (df) df.value = ''; }
   }
@@ -333,36 +347,55 @@ document.addEventListener('DOMContentLoaded', function() {
     const currentSelectedOrgaos = choicesOrgao ? choicesOrgao.getValue(true).map(v => v.toLowerCase()) : [];
     const currentSelectedObras = choicesObra ? choicesObra.getValue(true).map(v => v.toLowerCase()) : [];
     const currentSelectedNumProcessos = choicesNumProcesso ? choicesNumProcesso.getValue(true).map(v => v.toLowerCase()) : [];
+    const currentSelectedNfs = choicesNf ? choicesNf.getValue(true).map(v => v.toLowerCase()) : []; // Adicionado
 
+    // Atualiza Órgão
     if (changedElementId !== 'filterOrgao' && choicesOrgao) {
         let data = allProcessedFinanceiroData;
         if (currentSelectedObras.length > 0) data = data.filter(i => i.obraFormatted && currentSelectedObras.includes(i.obraFormatted.toLowerCase()));
         if (currentSelectedNumProcessos.length > 0) data = data.filter(i => i.rawNumProcesso1 && currentSelectedNumProcessos.includes(i.rawNumProcesso1.toLowerCase()));
+        if (currentSelectedNfs.length > 0) data = data.filter(i => i.rawNf && currentSelectedNfs.includes(i.rawNf.toLowerCase())); // Adicionado
         const opts = Array.from(new Set(data.map(i => i.rawOrgao).filter(Boolean))).sort().map(v => ({ value: v.toLowerCase(), label: v }));
         const prevSel = choicesOrgao.getValue(true).map(v => v.toLowerCase());
         choicesOrgao.setChoices(opts, 'value', 'label', true);
         const validReSel = prevSel.filter(v => opts.some(opt => opt.value === v));
         if (validReSel.length > 0) choicesOrgao.setValue(validReSel);
     }
+    // Atualiza Obra
     if (changedElementId !== 'filterObra' && choicesObra) {
         let data = allProcessedFinanceiroData;
         if (currentSelectedOrgaos.length > 0) data = data.filter(i => i.rawOrgao && currentSelectedOrgaos.includes(i.rawOrgao.toLowerCase()));
         if (currentSelectedNumProcessos.length > 0) data = data.filter(i => i.rawNumProcesso1 && currentSelectedNumProcessos.includes(i.rawNumProcesso1.toLowerCase()));
+        if (currentSelectedNfs.length > 0) data = data.filter(i => i.rawNf && currentSelectedNfs.includes(i.rawNf.toLowerCase())); // Adicionado
         const opts = Array.from(new Set(data.map(i => i.obraFormatted).filter(Boolean))).sort().map(v => ({ value: v.toLowerCase(), label: v }));
         const prevSel = choicesObra.getValue(true).map(v => v.toLowerCase());
         choicesObra.setChoices(opts, 'value', 'label', true);
         const validReSel = prevSel.filter(v => opts.some(opt => opt.value === v));
         if (validReSel.length > 0) choicesObra.setValue(validReSel);
     }
+    // Atualiza Nº Processo
     if (changedElementId !== 'filterNumProcesso1Select' && choicesNumProcesso) {
         let data = allProcessedFinanceiroData;
         if (currentSelectedOrgaos.length > 0) data = data.filter(i => i.rawOrgao && currentSelectedOrgaos.includes(i.rawOrgao.toLowerCase()));
         if (currentSelectedObras.length > 0) data = data.filter(i => i.obraFormatted && currentSelectedObras.includes(i.obraFormatted.toLowerCase()));
+        if (currentSelectedNfs.length > 0) data = data.filter(i => i.rawNf && currentSelectedNfs.includes(i.rawNf.toLowerCase())); // Adicionado
         const opts = Array.from(new Set(data.map(i => i.rawNumProcesso1).filter(Boolean))).sort().map(v => ({ value: v.toLowerCase(), label: v }));
         const prevSel = choicesNumProcesso.getValue(true).map(v => v.toLowerCase());
         choicesNumProcesso.setChoices(opts, 'value', 'label', true);
         const validReSel = prevSel.filter(v => opts.some(opt => opt.value === v));
         if (validReSel.length > 0) choicesNumProcesso.setValue(validReSel);
+    }
+    // Atualiza NF
+    if (changedElementId !== 'filterNf' && choicesNf) {
+        let data = allProcessedFinanceiroData;
+        if (currentSelectedOrgaos.length > 0) data = data.filter(i => i.rawOrgao && currentSelectedOrgaos.includes(i.rawOrgao.toLowerCase()));
+        if (currentSelectedObras.length > 0) data = data.filter(i => i.obraFormatted && currentSelectedObras.includes(i.obraFormatted.toLowerCase()));
+        if (currentSelectedNumProcessos.length > 0) data = data.filter(i => i.rawNumProcesso1 && currentSelectedNumProcessos.includes(i.rawNumProcesso1.toLowerCase()));
+        const opts = Array.from(new Set(data.map(i => i.rawNf).filter(Boolean))).sort().map(v => ({ value: v.toLowerCase(), label: v }));
+        const prevSel = choicesNf.getValue(true).map(v => v.toLowerCase());
+        choicesNf.setChoices(opts, 'value', 'label', true);
+        const validReSel = prevSel.filter(v => opts.some(opt => opt.value === v));
+        if (validReSel.length > 0) choicesNf.setValue(validReSel);
     }
     isRefreshingFilters = false;
   }
