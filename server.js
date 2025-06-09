@@ -60,8 +60,6 @@ app.post("/login", (req, res) => {
       gerente: user.gerente,
     };
     let redirectTo = "/";
-    // Não-ADMINISTRATIVO (inclui FINANCEIRO e REGIAO METROPOLITANA com gerente TODOS) são direcionados para #financeiro
-    // A lógica de exibição do menu no frontend cuidará de mostrar apenas "Financeiro" para eles, se aplicável.
     if (user.orgao && user.orgao.toUpperCase() !== "ADMINISTRATIVO") {
       redirectTo = "/#financeiro";
     }
@@ -111,8 +109,17 @@ app.get('/api/financeiro-data', async (req, res) => {
     if (lines.length < 1) return res.type('text/tab-separated-values').send('');
 
     const headerRow = lines[0].split('\t').map(h => h.trim());
-    const gerenteColumnNameFromSheet = "GERENTE"; // Nome da coluna na planilha
+    const gerenteColumnNameFromSheet = "GERENTE";
     const gerenteColumnIndex = headerRow.findIndex(header => header.toUpperCase() === gerenteColumnNameFromSheet.toUpperCase());
+
+    // ✅ **INÍCIO DA MODIFICAÇÃO**
+    // 1. Encontrar o índice da coluna "ORGAO" de forma mais robusta.
+    // Este código agora remove acentos e converte para maiúsculas antes de comparar.
+    // Assim, ele encontrará a coluna corretamente, seja ela "ORGAO" ou "ÓRGÃO".
+    const orgaoColumnIndex = headerRow.findIndex(header => 
+        header.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() === "ORGAO"
+    );
+    // ✅ **FIM DA MODIFICAÇÃO**
 
     let dataRowsAsArrays = lines.slice(1).map(line => line.split('\t').map(cell => cell.trim()));
     
@@ -121,31 +128,40 @@ app.get('/api/financeiro-data', async (req, res) => {
 
     let filteredDataRows;
 
-    // CONDIÇÃO DE ACESSO TOTAL AOS DADOS MODIFICADA AQUI:
     if (
         userOrgaoUpper === "ADMINISTRATIVO" ||
         userOrgaoUpper === "FINANCEIRO" ||
         (userOrgaoUpper.startsWith("REGIAO METROPOLITANA") && userGerenteUpper === "TODOS")
     ) {
-        filteredDataRows = dataRowsAsArrays; // Acesso total aos dados
+        filteredDataRows = dataRowsAsArrays;
     } else {
-        // Outros usuários são filtrados pelo seu 'gerente' específico
         if (gerenteColumnIndex === -1) {
             console.warn(`Coluna "${gerenteColumnNameFromSheet}" não encontrada na planilha. Usuário ${req.session.user.username} não verá dados.`);
             filteredDataRows = [];
-        } else if (!req.session.user.gerente) { // Verifica se o userGerente (original, não Upper) está definido
+        } else if (!req.session.user.gerente) {
             console.warn(`Usuário ${req.session.user.username} (${userOrgaoUpper}) não tem 'gerente' definido para filtro. Não verá dados.`);
             filteredDataRows = [];
         } else {
             filteredDataRows = dataRowsAsArrays.filter(rowArray => {
                 const gerenteNaPlanilha = rowArray[gerenteColumnIndex];
-                // Compara o userGerente (já em UpperCase) com o gerente da planilha (convertido para UpperCase)
                 return gerenteNaPlanilha && 
                        gerenteNaPlanilha.trim().toUpperCase() === userGerenteUpper;
             });
         }
     }
     
+    // 2. Ordenar os dados filtrados pela coluna "ORGAO"
+    if (orgaoColumnIndex !== -1) {
+      filteredDataRows.sort((a, b) => {
+        const orgaoA = a[orgaoColumnIndex] || '';
+        const orgaoB = b[orgaoColumnIndex] || '';
+        return orgaoA.localeCompare(orgaoB);
+      });
+    } else {
+        // Adiciona um aviso caso a coluna não seja encontrada
+        console.warn('A coluna "ORGAO" não foi encontrada no cabeçalho. Os dados não serão ordenados por órgão.');
+    }
+
     const outputHeader = headerRow.join('\t');
     const outputData = filteredDataRows.map(rowArray => 
         headerRow.map((header, index) => rowArray[index] || '').join('\t')
