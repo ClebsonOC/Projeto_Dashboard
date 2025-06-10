@@ -135,9 +135,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const eventType = (input.tagName === 'SELECT' || input.type === 'date') ? 'change' : 'input';
         input.addEventListener(eventType, () => { // MODIFICADO: Standard filters também podem precisar atualizar dependentes
             applyFiltersToTable();
-            // Se os filtros padrão também devem restringir as *opções* dos dropdowns Choices:
-            // refreshDependentFilters(input.id); 
-            // Por enquanto, eles só filtram a tabela.
         });
     }
   });
@@ -168,49 +165,46 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // --- FUNÇÕES DE FILTRO, ATUALIZAÇÃO DE DROPDOWNS, INFO USUÁRIO ---
 
+  // ✅ FUNÇÃO MODIFICADA PARA RETORNAR OS DADOS DO USUÁRIO
   async function setupUserSpecificUI() {
     try {
         const response = await fetch('/api/userinfo');
-        if (response.ok) {
-            const userInfo = await response.json();
-            
-            const userNameElement = document.querySelector('.main-header .user-profile .user-name');
-            if (userNameElement && userInfo.username) {
-                userNameElement.textContent = userInfo.username;
-            } else if (userNameElement) {
-                userNameElement.textContent = 'Usuário';
-            }
-
-            // Restrição do menu da barra lateral
-            if (userInfo.orgao && userInfo.orgao.toUpperCase() !== "ADMINISTRATIVO") {
-                console.log("Usuário não é ADMIN, restringindo menu.");
-                navItemLinks.forEach(linkElement => { // navItemLinks são os <a>
-                    const href = linkElement.getAttribute('href');
-                    const listItem = linkElement.closest('.nav-item'); // Pega o <li> pai
-                    if (listItem) {
-                        if (href !== "#financeiro") {
-                            listItem.style.display = 'none'; 
-                        } else {
-                            listItem.style.display = ''; 
-                        }
-                    }
-                });
-            } else {
-                // Se for admin ou não houver info de orgao, garante que todos os itens estão visíveis
-                navItemLinks.forEach(linkElement => {
-                    const listItem = linkElement.closest('.nav-item');
-                    if (listItem) listItem.style.display = '';
-                });
-            }
-
-        } else {
+        if (!response.ok) {
             console.error('Falha ao buscar informações do usuário para UI:', response.status);
             if (response.status === 401 || response.status === 403) {
-                window.location.href = '/login'; // Redireciona se não autorizado
+                window.location.href = '/login';
             }
+            return null; // Retorna nulo em caso de erro
         }
+        
+        const userInfo = await response.json();
+        
+        const userNameElement = document.querySelector('.main-header .user-profile .user-name');
+        if (userNameElement) {
+            userNameElement.textContent = userInfo.username || 'Usuário';
+        }
+
+        // Restrição do menu da barra lateral
+        if (userInfo.orgao && userInfo.orgao.toUpperCase() !== "ADMINISTRATIVO") {
+            navItemLinks.forEach(linkElement => {
+                const href = linkElement.getAttribute('href');
+                const listItem = linkElement.closest('.nav-item');
+                if (listItem) {
+                    listItem.style.display = (href === "#financeiro") ? '' : 'none';
+                }
+            });
+        } else {
+            navItemLinks.forEach(linkElement => {
+                const listItem = linkElement.closest('.nav-item');
+                if (listItem) listItem.style.display = '';
+            });
+        }
+        
+        return userInfo; // Retorna os dados do usuário no sucesso
+
     } catch (error) {
         console.error('Erro ao configurar UI específica do usuário:', error);
+        return null; // Retorna nulo em caso de erro
     }
   }
 
@@ -241,7 +235,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const filterDataPagtInicio = document.getElementById('filterDataPagtInicio')?.value || '';
     const filterDataPagtFim = document.getElementById('filterDataPagtFim')?.value || '';
     const filterLegenda = document.getElementById('filterLegenda')?.value || '';
-    // const filterNf = document.getElementById('filterNf')?.value.toLowerCase() || ''; // Removido
 
     const selectedOrgaos = choicesOrgao ? choicesOrgao.getValue(true).map(v => v.toLowerCase()) : [];
     const selectedObras = choicesObra ? choicesObra.getValue(true).map(v => v.toLowerCase()) : [];
@@ -256,7 +249,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (showRow && filterLegenda && item.rawLegenda !== filterLegenda) showRow = false;
         if (showRow && selectedOrgaos.length > 0 && (!item.rawOrgao || !selectedOrgaos.includes(item.rawOrgao.toLowerCase()))) showRow = false;
         if (showRow && selectedObras.length > 0 && (!item.obraFormatted || !selectedObras.includes(item.obraFormatted.toLowerCase()))) showRow = false;
-        // if (showRow && filterNf && (!item.rawNf || item.rawNf.toLowerCase().indexOf(filterNf) === -1)) showRow = false; // Removido
         if (showRow && selectedNfs.length > 0 && (!item.rawNf || !selectedNfs.includes(item.rawNf.toLowerCase()))) showRow = false; // Adicionado
         if (showRow && selectedNumProcessos.length > 0 && (!item.rawNumProcesso1 || !selectedNumProcessos.includes(item.rawNumProcesso1.toLowerCase()))) showRow = false;
         return showRow;
@@ -409,9 +401,30 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // --- INICIALIZAÇÃO ---
-  handleHashChange(); // Carrega conteúdo da rota inicial
-  setupUserSpecificUI(); // Busca info do usuário e ajusta UI (nome, menu)
-  checkLayout(); // Ajusta layout inicial
-  window.addEventListener('resize', checkLayout);
+
+  // ✅ NOVA LÓGICA DE INICIALIZAÇÃO PARA EVITAR LOOP
+  async function initializeApp() {
+    // 1. Busca os dados do usuário e ajusta a UI (menu, nome)
+    const userInfo = await setupUserSpecificUI();
+
+    // 2. Verifica se devemos redirecionar o usuário ANTES de carregar o conteúdo
+    if (userInfo && userInfo.orgao && userInfo.orgao.toUpperCase() !== "ADMINISTRATIVO") {
+        // Se o usuário é do financeiro e está na página raiz, mude o hash para #financeiro
+        const currentHash = window.location.hash;
+        if (currentHash === "" || currentHash === "#" || currentHash === "#painel-geral") {
+            window.location.hash = '#financeiro';
+        }
+    }
+
+    // 3. Agora, carregue o conteúdo da rota correta (seja a padrão ou a que acabamos de definir)
+    handleHashChange(); 
+    
+    // 4. Ajusta o layout inicial
+    checkLayout(); 
+    window.addEventListener('resize', checkLayout);
+  }
+
+  initializeApp(); // Inicia a aplicação com a nova lógica!
+
 
 }); // Fim do DOMContentLoaded principal

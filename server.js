@@ -114,14 +114,9 @@ app.get('/api/financeiro-data', async (req, res) => {
     const gerenteColumnNameFromSheet = "GERENTE";
     const gerenteColumnIndex = headerRow.findIndex(header => header.toUpperCase() === gerenteColumnNameFromSheet.toUpperCase());
 
-    // ✅ **INÍCIO DA MODIFICAÇÃO**
-    // 1. Encontrar o índice da coluna "ORGAO" de forma mais robusta.
-    // Este código agora remove acentos e converte para maiúsculas antes de comparar.
-    // Assim, ele encontrará a coluna corretamente, seja ela "ORGAO" ou "ÓRGÃO".
     const orgaoColumnIndex = headerRow.findIndex(header => 
         header.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() === "ORGAO"
     );
-    // ✅ **FIM DA MODIFICAÇÃO**
 
     let dataRowsAsArrays = lines.slice(1).map(line => line.split('\t').map(cell => cell.trim()));
     
@@ -152,7 +147,6 @@ app.get('/api/financeiro-data', async (req, res) => {
         }
     }
     
-    // 2. Ordenar os dados filtrados pela coluna "ORGAO"
     if (orgaoColumnIndex !== -1) {
       filteredDataRows.sort((a, b) => {
         const orgaoA = a[orgaoColumnIndex] || '';
@@ -160,7 +154,6 @@ app.get('/api/financeiro-data', async (req, res) => {
         return orgaoA.localeCompare(orgaoB);
       });
     } else {
-        // Adiciona um aviso caso a coluna não seja encontrada
         console.warn('A coluna "ORGAO" não foi encontrada no cabeçalho. Os dados não serão ordenados por órgão.');
     }
 
@@ -179,7 +172,10 @@ app.get('/api/financeiro-data', async (req, res) => {
   }
 });
 
-app.get("/", (req, res) => res.sendFile(path.join(__dirname, "index.html")));
+// ✅ ROTA PRINCIPAL CORRIGIDA PARA APENAS SERVIR O ARQUIVO HTML
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
 
 // Servir arquivos estáticos protegidos
 app.use("/css", express.static(path.join(__dirname, "css")));
