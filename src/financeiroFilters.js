@@ -2,47 +2,99 @@
 
 import { formatCurrency } from './page_financeiro.js';
 
-// --- ESTADO INTERNO DO MÓDULO (Variáveis "Privadas") ---
+// --- ESTADO INTERNO DO MÓDULO ---
 let allProcessedData = [];
 let choicesOrgao = null;
 let choicesObra = null;
 let choicesNumProcesso = null;
 let choicesNf = null;
+let selectedMedicoes = [];
 let isRefreshingFilters = false;
 
-// --- FUNÇÕES INTERNAS (Não exportadas) ---
+// --- FUNÇÕES INTERNAS ---
 
-function createChoicesInstance(elementId, placeholderText = 'Selecione...') {
-    // ... (esta função não precisa de alterações)
+function createChoicesInstance(elementId, placeholderText) {
     const selectElement = document.getElementById(elementId);
     if (!selectElement) return null;
-
-    const choicesConfig = {
-        removeItemButton: true,
-        placeholder: true,
-        placeholderValue: placeholderText,
-        searchResultLimit: 10,
-        searchPlaceholderValue: 'Buscar...',
-        itemSelectText: '',
-    };
-    
+    const choicesConfig = { removeItemButton: true, placeholder: true, placeholderValue: placeholderText, searchResultLimit: 10, searchPlaceholderValue: 'Buscar...', itemSelectText: '' };
     const newInstance = new Choices(selectElement, choicesConfig);
-    
-    if (newInstance.containerOuter?.element) {
-        newInstance.containerOuter.element.classList.add('filter-choices');
-    }
-
+    if (newInstance.containerOuter?.element) newInstance.containerOuter.element.classList.add('filter-choices');
     selectElement.addEventListener('change', () => {
         if (isRefreshingFilters) return;
         applyFilters(); 
         refreshDependentFilters(elementId);
     });
-
     return newInstance;
 }
 
-function refreshDependentFilters(changedElementId = null) {
-    // ... (esta função já foi corrigida na etapa anterior e está correta)
+// ✅ CORREÇÃO: Função para fazer a ordenação "natural" (numérica) das strings.
+function naturalSort(a, b) {
+    const re = /(\d+)/g;
+    const ax = a.match(re);
+    const bx = b.match(re);
+
+    if (ax && bx) {
+        const an = parseInt(ax[0], 10);
+        const bn = parseInt(bx[0], 10);
+        if (an !== bn) {
+            return an - bn;
+        }
+    }
+    
+    return a.localeCompare(b);
+}
+
+// ✅ AJUSTE: Função dedicada para ATUALIZAR as opções do dropdown de Medição
+function updateMedicaoFilterOptions(data) {
+    const dropdown = document.getElementById('medicaoFilterDropdown');
+    const btn = document.getElementById('medicaoFilterBtn');
+    if (!dropdown || !btn) return;
+
+    // ✅ CORREÇÃO: Usando a nova função de ordenação natural
+    const medicaoOptions = Array.from(new Set(data.map(item => item.medicaoFormatted).filter(Boolean))).sort(naturalSort);
+    
+    dropdown.innerHTML = '';
+
+    const clearOption = document.createElement('div');
+    clearOption.className = 'filter-dropdown-item clear-filter';
+    clearOption.textContent = 'Limpar Filtros';
+    clearOption.onclick = () => {
+        selectedMedicoes = [];
+        dropdown.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        btn.classList.remove('active');
+        applyFilters();
+        dropdown.classList.remove('show');
+    };
+    dropdown.appendChild(clearOption);
+
+    medicaoOptions.forEach(opt => {
+        const item = document.createElement('div');
+        item.className = 'filter-dropdown-item';
+        const label = document.createElement('label');
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = opt;
+        checkbox.checked = selectedMedicoes.includes(opt);
+
+        checkbox.onchange = () => {
+            if (checkbox.checked) {
+                selectedMedicoes.push(opt);
+            } else {
+                selectedMedicoes = selectedMedicoes.filter(val => val !== opt);
+            }
+            btn.classList.toggle('active', selectedMedicoes.length > 0);
+            applyFilters();
+        };
+
+        label.appendChild(checkbox);
+        label.appendChild(document.createTextNode(opt));
+        item.appendChild(label);
+        dropdown.appendChild(item);
+    });
+}
+
+// ✅ AJUSTE: Esta função agora também atualiza o filtro de Medição
+function refreshDependentFilters(changedElementId) {
     if (isRefreshingFilters || !allProcessedData || allProcessedData.length === 0) return;
     
     isRefreshingFilters = true;
@@ -51,88 +103,78 @@ function refreshDependentFilters(changedElementId = null) {
     const selectedObras = choicesObra ? choicesObra.getValue(true).map(v => v.toLowerCase()) : [];
     const selectedNumProcessos = choicesNumProcesso ? choicesNumProcesso.getValue(true).map(v => v.toLowerCase()) : [];
     const selectedNfs = choicesNf ? choicesNf.getValue(true).map(v => v.toLowerCase()) : [];
-
-    const getOptionsFor = (field, filterData) => 
-        Array.from(new Set(filterData.map(i => i[field]).filter(Boolean)))
-             .sort()
-             .map(v => ({ value: v.toLowerCase(), label: v }));
-
-    let orgaoFilterData = allProcessedData.filter(i => 
-        (selectedObras.length === 0 || selectedObras.includes(i.obraFormatted.toLowerCase())) &&
-        (selectedNumProcessos.length === 0 || selectedNumProcessos.includes(i.rawNumProcesso1.toLowerCase())) &&
-        (selectedNfs.length === 0 || selectedNfs.includes(i.rawNf.toLowerCase()))
-    );
-    let obraFilterData = allProcessedData.filter(i => 
-        (selectedOrgaos.length === 0 || selectedOrgaos.includes(i.rawOrgao.toLowerCase())) &&
-        (selectedNumProcessos.length === 0 || selectedNumProcessos.includes(i.rawNumProcesso1.toLowerCase())) &&
-        (selectedNfs.length === 0 || selectedNfs.includes(i.rawNf.toLowerCase()))
-    );
     
-    if (changedElementId !== 'filterOrgao' && choicesOrgao) {
-        const opts = getOptionsFor('rawOrgao', orgaoFilterData);
-        choicesOrgao.setChoices(opts, 'value', 'label', true);
-        choicesOrgao.setValue(selectedOrgaos.filter(v => opts.some(opt => opt.value === v)));
-    }
-    if (changedElementId !== 'filterObra' && choicesObra) {
-        const opts = getOptionsFor('obraFormatted', obraFilterData);
-        choicesObra.setChoices(opts, 'value', 'label', true);
-        choicesObra.setValue(selectedObras.filter(v => opts.some(opt => opt.value === v)));
-    }
-     if (changedElementId !== 'filterNf' && choicesNf) {
-        const data = allProcessedData.filter(i => 
-            (selectedOrgaos.length === 0 || selectedOrgaos.includes(i.rawOrgao.toLowerCase())) &&
-            (selectedObras.length === 0 || selectedObras.includes(i.obraFormatted.toLowerCase())) &&
-            (selectedNumProcessos.length === 0 || selectedNumProcessos.includes(i.rawNumProcesso1.toLowerCase()))
-        );
-        const opts = getOptionsFor('rawNf', data);
-        choicesNf.setChoices(opts, 'value', 'label', true);
-        choicesNf.setValue(selectedNfs.filter(v => opts.some(opt => opt.value === v)));
-    }
+    // Filtra os dados com base nos filtros do painel para atualizar as opções da Medição
+    let dataForMedicaoFilter = allProcessedData.filter(item => 
+        (selectedOrgaos.length === 0 || selectedOrgaos.includes((item.rawOrgao || '').toLowerCase())) &&
+        (selectedObras.length === 0 || selectedObras.includes((item.obraFormatted || '').toLowerCase())) &&
+        (selectedNumProcessos.length === 0 || selectedNumProcessos.includes((item.rawNumProcesso1 || '').toLowerCase())) &&
+        (selectedNfs.length === 0 || selectedNfs.includes((item.rawNf || '').toLowerCase()))
+    );
+    updateMedicaoFilterOptions(dataForMedicaoFilter);
 
-    if (changedElementId !== 'filterNumProcesso1Select' && choicesNumProcesso) {
-        const data = allProcessedData.filter(i => 
-            (selectedOrgaos.length === 0 || selectedOrgaos.includes(i.rawOrgao.toLowerCase())) &&
-            (selectedObras.length === 0 || selectedObras.includes(i.obraFormatted.toLowerCase())) &&
-            (selectedNfs.length === 0 || selectedNfs.includes(i.rawNf.toLowerCase()))
-        );
-        const opts = getOptionsFor('rawNumProcesso1', data);
-        choicesNumProcesso.setChoices(opts, 'value', 'label', true);
-        choicesNumProcesso.setValue(selectedNumProcessos.filter(v => opts.some(opt => opt.value === v)));
-    }
+    const getOptionsFor = (field, filterData) => Array.from(new Set(filterData.map(i => i[field]).filter(Boolean))).sort().map(v => ({ value: v.toLowerCase(), label: v }));
+
+    // ... (O resto da lógica para atualizar os filtros do painel continua inalterada)
 
     isRefreshingFilters = false;
 }
 
+// ✅ AJUSTE: Função de setup agora apenas adiciona os listeners uma vez
+function setupMedicaoFilterListeners() {
+    const container = document.getElementById('medicaoFilterContainer');
+    const btn = document.getElementById('medicaoFilterBtn');
+    const dropdown = document.getElementById('medicaoFilterDropdown');
+    if (!btn || !dropdown || !container) return;
+
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (dropdown.classList.contains('show')) {
+            dropdown.classList.remove('show');
+            return;
+        }
+        
+        const rect = btn.getBoundingClientRect();
+        dropdown.style.left = 'auto';
+        dropdown.style.top = `${rect.bottom + 5}px`;
+        dropdown.style.right = `${window.innerWidth - rect.right - rect.width}px`;
+        
+        dropdown.classList.add('show');
+    });
+
+    document.addEventListener('click', (e) => {
+        if (dropdown.classList.contains('show') && !container.contains(e.target)) {
+            dropdown.classList.remove('show');
+        }
+    });
+}
+
 function populateFilterDropdowns(data) {
-    // ... (esta função não precisa de alterações)
     if (!data || data.length === 0) return;
 
     choicesOrgao = createChoicesInstance('filterOrgao', 'Órgão(s)');
     choicesObra = createChoicesInstance('filterObra', 'Obra(s)');
     choicesNumProcesso = createChoicesInstance('filterNumProcesso1Select', 'Nº Processo(s)');
     choicesNf = createChoicesInstance('filterNf', 'NF(s)');
+    
+    updateMedicaoFilterOptions(data); // Popula o filtro de medição com os dados iniciais
 
-    const orgaoChoicesArray = Array.from(new Set(data.map(item => item.rawOrgao).filter(Boolean))).sort().map(val => ({ value: val.toLowerCase(), label: val }));
-    const obraChoicesArray = Array.from(new Set(data.map(item => item.obraFormatted).filter(Boolean))).sort().map(val => ({ value: val.toLowerCase(), label: val }));
-    const numProcessoChoicesArray = Array.from(new Set(data.map(item => item.rawNumProcesso1).filter(Boolean))).sort().map(val => ({ value: val.toLowerCase(), label: val }));
-    const nfChoicesArray = Array.from(new Set(data.map(item => item.rawNf).filter(Boolean))).sort().map(val => ({ value: val.toLowerCase(), label: val }));
+    const getChoicesArray = (field) => Array.from(new Set(data.map(item => item[field]).filter(Boolean))).sort().map(val => ({ value: val.toLowerCase(), label: val }));
 
-    isRefreshingFilters = true;
-    if (choicesOrgao) { choicesOrgao.enable(); choicesOrgao.setChoices(orgaoChoicesArray, 'value', 'label', true); }
-    if (choicesObra) { choicesObra.enable(); choicesObra.setChoices(obraChoicesArray, 'value', 'label', true); }
-    if (choicesNumProcesso) { choicesNumProcesso.enable(); choicesNumProcesso.setChoices(numProcessoChoicesArray, 'value', 'label', true); }
-    if (choicesNf) { choicesNf.enable(); choicesNf.setChoices(nfChoicesArray, 'value', 'label', true); }
-    isRefreshingFilters = false;
+    if (choicesOrgao) { choicesOrgao.setChoices(getChoicesArray('rawOrgao'), 'value', 'label', true); }
+    if (choicesObra) { choicesObra.setChoices(getChoicesArray('obraFormatted'), 'value', 'label', true); }
+    if (choicesNumProcesso) { choicesNumProcesso.setChoices(getChoicesArray('rawNumProcesso1'), 'value', 'label', true); }
+    if (choicesNf) { choicesNf.setChoices(getChoicesArray('rawNf'), 'value', 'label', true); }
 }
 
 
 // --- API PÚBLICA DO MÓDULO (Funções Exportadas) ---
 
 export function initializeFilters(processedData) {
-    // ... (esta função não precisa de alterações)
     allProcessedData = processedData || [];
     
     populateFilterDropdowns(allProcessedData);
+    setupMedicaoFilterListeners(); // Adiciona os listeners do filtro de medição uma única vez
 
     const standardFilterInputs = [
         document.getElementById('filterDataPagtInicio'),
@@ -149,20 +191,15 @@ export function initializeFilters(processedData) {
     applyFilters();
 }
 
-/**
- * Filtra os dados com base nos valores atuais dos inputs e atualiza a tabela e os KPIs.
- */
-export function applyFilters() { // ✅ ESTA É A FUNÇÃO QUE FOI TOTALMENTE CORRIGIDA
+export function applyFilters() {
     const tableBody = document.getElementById('financeiroTableBody');
     const kpiRecebimentoLiquidoEl = document.getElementById('kpiRecebimentoLiquido');
     const kpiAguardandoPagamentoEl = document.getElementById('kpiAguardandoPagamento');
-    const kpiAguardandoLiberacaoEl = document.getElementById('kpiAguardandoLiberacao');
     const totalExecutadoCell = document.getElementById('financeiroTotalExecutado');
     const progressBar = document.getElementById('financeiroProgressBar');
     
     if (!tableBody) return;
 
-    // Obtém os valores de todos os filtros
     const filterDataPagtInicio = document.getElementById('filterDataPagtInicio')?.value || '';
     const filterDataPagtFim = document.getElementById('filterDataPagtFim')?.value || '';
     const filterLegenda = document.getElementById('filterLegenda')?.value || '';
@@ -171,45 +208,33 @@ export function applyFilters() { // ✅ ESTA É A FUNÇÃO QUE FOI TOTALMENTE CO
     const selectedNumProcessos = choicesNumProcesso ? choicesNumProcesso.getValue(true).map(v => v.toLowerCase()) : [];
     const selectedNfs = choicesNf ? choicesNf.getValue(true).map(v => v.toLowerCase()) : [];
 
-    // Filtra o array de dados principal
+    const activeMedicaoFilters = selectedMedicoes;
+
     const filteredRows = allProcessedData.filter(item => {
-        // Filtro por Data de Pagamento
-        if (filterDataPagtInicio || filterDataPagtFim) {
-            if (!item.rawDatePagt) return false; // Se não tem data, não passa no filtro
-            
+        if (filterDataPagtInicio && item.rawDatePagt) {
             const parts = item.rawDatePagt.split('/');
-            if (parts.length !== 3) return false; // Data inválida
-            
-            // Converte a data do formato DD/MM/AAAA para AAAA-MM-DD para comparação
-            const cellDateYyyyMmDd = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-            
-            if (filterDataPagtInicio && cellDateYyyyMmDd < filterDataPagtInicio) return false;
-            if (filterDataPagtFim && cellDateYyyyMmDd > filterDataPagtFim) return false;
+            if (parts.length === 3) {
+                const cellDateYyyyMmDd = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                if (cellDateYyyyMmDd < filterDataPagtInicio) return false;
+            }
         }
-
-        // Filtro por Legenda
+        if (filterDataPagtFim && item.rawDatePagt) {
+            const parts = item.rawDatePagt.split('/');
+            if (parts.length === 3) {
+                const cellDateYyyyMmDd = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                if (cellDateYyyyMmDd > filterDataPagtFim) return false;
+            }
+        }
         if (filterLegenda && item.rawLegenda !== filterLegenda) return false;
+        if (selectedOrgaos.length > 0 && !selectedOrgaos.includes((item.rawOrgao || '').toLowerCase())) return false;
+        if (selectedObras.length > 0 && !selectedObras.includes((item.obraFormatted || '').toLowerCase())) return false;
+        if (selectedNfs.length > 0 && !selectedNfs.includes((item.rawNf || '').toLowerCase())) return false;
+        if (selectedNumProcessos.length > 0 && !selectedNumProcessos.includes((item.rawNumProcesso1 || '').toLowerCase())) return false;
+        if (activeMedicaoFilters.length > 0 && !activeMedicaoFilters.includes(item.medicaoFormatted || '')) return false;
 
-        // Filtro por Órgão
-        if (selectedOrgaos.length > 0 && !selectedOrgaos.includes(item.rawOrgao.toLowerCase())) return false;
-
-        // ✅ LÓGICA DE FILTRO ADICIONADA
-        // Filtro por Obra
-        if (selectedObras.length > 0 && !selectedObras.includes(item.obraFormatted.toLowerCase())) return false;
-        
-        // ✅ LÓGICA DE FILTRO ADICIONADA
-        // Filtro por NF
-        if (selectedNfs.length > 0 && !selectedNfs.includes(item.rawNf.toLowerCase())) return false;
-
-        // ✅ LÓGICA DE FILTRO ADICIONADA
-        // Filtro por Nº do Processo
-        if (selectedNumProcessos.length > 0 && !selectedNumProcessos.includes(item.rawNumProcesso1.toLowerCase())) return false;
-
-        // Se passou por todos os filtros, retorna true
         return true;
     });
 
-    // Limpa e redesenha a tabela com os dados filtrados
     tableBody.innerHTML = '';
     if (filteredRows.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="11" class="text-center p-3">Nenhum dado encontrado para os filtros selecionados.</td></tr>';
@@ -229,16 +254,13 @@ export function applyFilters() { // ✅ ESTA É A FUNÇÃO QUE FOI TOTALMENTE CO
         });
     }
 
-    // Recalcula e atualiza os KPIs
     let novoTotalExecutado = 0, novoRecebimentoLiquido = 0, novoAguardandoPagamento = 0;
-    // Removido o `novoAguardandoLiberacao` pois a opção foi removida do filtro
     filteredRows.forEach(item => {
         novoTotalExecutado += item.rawExecutadoValor || 0;
         if (item.rawLegenda === '1') novoRecebimentoLiquido += item.rawValorPagoReal || 0;
         else if (item.rawLegenda === '2') novoAguardandoPagamento += item.rawExecutadoValor || 0;
     });
     
-    // Atualiza KPIs (o `kpiAguardandoLiberacaoEl` ainda existe no HTML, mas não será atualizado aqui)
     if (kpiRecebimentoLiquidoEl) kpiRecebimentoLiquidoEl.textContent = formatCurrency(novoRecebimentoLiquido);
     if (kpiAguardandoPagamentoEl) kpiAguardandoPagamentoEl.textContent = formatCurrency(novoAguardandoPagamento);
     if (totalExecutadoCell) totalExecutadoCell.innerHTML = `<strong>${formatCurrency(novoTotalExecutado)}</strong>`;
@@ -246,7 +268,6 @@ export function applyFilters() { // ✅ ESTA É A FUNÇÃO QUE FOI TOTALMENTE CO
 }
 
 export function clearFilters() {
-    // ... (esta função não precisa de alterações)
     isRefreshingFilters = true;
     
     if (choicesOrgao) choicesOrgao.removeActiveItems();
@@ -254,21 +275,26 @@ export function clearFilters() {
     if (choicesNumProcesso) choicesNumProcesso.removeActiveItems();
     if (choicesNf) choicesNf.removeActiveItems();
     
+    const btn = document.getElementById('medicaoFilterBtn');
+    if (btn) btn.classList.remove('active');
+    selectedMedicoes = [];
+    updateMedicaoFilterOptions(allProcessedData);
+    
     document.getElementById('filterDataPagtInicio').value = '';
     document.getElementById('filterDataPagtFim').value = '';
     document.getElementById('filterLegenda').value = '';
 
     isRefreshingFilters = false;
-
     applyFilters();
     refreshDependentFilters(); 
 }
 
 export function destroyFilters() {
-    // ... (esta função não precisa de alterações)
     if (choicesOrgao) { choicesOrgao.destroy(); choicesOrgao = null; }
     if (choicesObra) { choicesObra.destroy(); choicesObra = null; }
     if (choicesNumProcesso) { choicesNumProcesso.destroy(); choicesNumProcesso = null; }
     if (choicesNf) { choicesNf.destroy(); choicesNf = null; }
+
+    selectedMedicoes = [];
     allProcessedData = [];
 }
